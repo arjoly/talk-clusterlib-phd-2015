@@ -77,8 +77,8 @@
 
 \frame{
 
-\frametitle{First use cases for the birth of clusterlib}
-\framesubtitle{Solving supervised learning tasks, (kaggle contests?), ...}
+\frametitle{Use case for the birth of clusterlib}
+\framesubtitle{Solving supervised learning tasks}
 The goal of supervised learning is to learn a function from
 \structure{input}-\alert{output} pairs in order to predict the \alert{output} 
 for any new \structure{input}.
@@ -104,10 +104,10 @@ for any new \structure{input}.
 }
 
 \frame{
-\frametitle{Second use cases for the birth of clusterlib}
-\framesubtitle{Compression of tree ensemble models}
+\frametitle{Use case for the birth of clusterlib (II)}
+\framesubtitle{Compression of random forest models}
 The learnt function was a decision tree model. Nowadays instead of only one tree, 
-we generate very large ensemble of randomized decision tree.
+we generate very large ensemble of randomized decision trees.
     
 \begin{center}    
     \includegraphics[width=0.7\textwidth]{decision_tree_structure}
@@ -120,9 +120,8 @@ How to compress those models while preserving accuracy?
 
 
 \frame{
-
-\frametitle{Third use cases for the birth of clusterlib}
-\framesubtitle{Multilabel classification tasks}
+\frametitle{Use case for the birth of clusterlib (III)}
+\framesubtitle{Solving high dimensional multilabel classification tasks}
 
 Many applications in text, biology or image processing where samples are associated 
 to sets of labels or continuous response.
@@ -155,20 +154,19 @@ for high dimensional multi-label classification \cite{joly2014random}}
 \frame{
 \frametitle{Time is running out}
 
-I have huge set of experiments
+I have huge set of experiments and the following upper bound
 
 \[
-O(\text{\#dataset} \times  \text{\#algorithms}  \times  \text{\#parameters}) \leq O(\text{time before deadline})
+O(\text{\#datasets} \times  \text{\#algorithms}  \times  \text{\#parameters}) \leq O(\text{time before deadline})
 \]
 
-But, we have \alert{embarrassingly parallel tasks}. Let's use the supercomputer.
-We \structure{hope} to be able  
+But, we have \alert{embarrassingly parallel tasks}. Let's use a supercomputer. We \structure{hope} to be able  
 \begin{itemize}
-\item to launch easily a lot of parameter combinations;
+\item to launch easily many jobs at once ;
 \item to avoid launching running or queued jobs;
 \item to avoid launching completed jobs.
 \item to be queue scheduler agnostic (SLURM? SGE?).
-\item to have few / no  dependences.
+\item to have few  dependences.
 \end{itemize}
   
 }
@@ -177,21 +175,23 @@ We \structure{hope} to be able
 \frametitle{A glimpse to a supercomputer user interface (SLURM)}
 \framesubtitle{How to sumit a job?}
 
-First write a batch file \texttt{job.sh} which contain memory requirements
-and what needs to be done.
+First, we need to write a bash file \texttt{job.sh} which specifies 
+resources requirements (time, memory,...) 
+and call the appropriate program.
 
-\begin{verbatim}
+\begin{minted}{bash}
 #!/bin/bash
 #
 #SBATCH --job-name=job-name
 #SBATCH --time=10:00
 #SBATCH --mem=1000
-
 srun hostname
-\end{verbatim}
+\end{minted}
 
-Then you can launch the job through \texttt{sbatch job.sh}.
-
+Then you can launch the job in the queue
+\begin{minted}{bash}
+$ sbatch job.sh
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile=singleslide]
@@ -200,18 +200,23 @@ Then you can launch the job through \texttt{sbatch job.sh}.
 
 To check if a job is running, you can use the \texttt{squeue} command.
 
+\begin{minted}{bash}
+$ squeue -u `whoami`
+\end{minted}
+
 \begin{scriptsize}
 \begin{verbatim}
-$ squeue -u ajoly
-JOBID PARTITION     NAME     USER  ST       TIME  NODES NODELIST(REASON)
-1225128      defq wipo-20f    ajoly  PD       0:00      1 (Priority)
-1225129      defq wipo-a36    ajoly  PD       0:00      1 (Priority)
+JOBID   PARTITION     NAME       USER  ST       TIME  NODES NODELIST(REASON)
+1225128      defq job-9999    someone  PD       0:00      1 (Priority)
+1225129      defq job-9998    someone  PD       0:00      1 (Priority)
 ...
-1224607      defq wipo-a31    ajoly   R    7:39:16      1 node025
-1224605      defq wipo-08d    ajoly   R    7:43:25      1 node040
-1224593      defq wipo-59d    ajoly   R    8:06:33      1 node035
+1224607      defq job-0003    someone   R    7:39:16      1 node025
+1224605      defq job-0002    someone   R    7:43:25      1 node040
+1224593      defq job-0001    someone   R    8:06:33      1 node035
 \end{verbatim}
 \end{scriptsize}
+
+
 
 \end{frame}
 
@@ -220,7 +225,7 @@ JOBID PARTITION     NAME     USER  ST       TIME  NODES NODELIST(REASON)
 \frametitle{Back to the checklist}
 
 \begin{itemize}
-\item Can we launch easily a lot of parameter combinations? \structure{No!}
+\item Can we launch easily many jobs at once? \structure{No!}
 \item Can we avoid launching running or queued jobs? \structure{No!}
 \item Can we avoid launching completed jobs? \structure{No}
 \item Will it work for several clusters (at least SGE, SLURM)? \structure{No}
@@ -312,7 +317,138 @@ if __name__ == "__main__":
 
 \end{frame}
 
-   
+\begin{frame}[fragile=singleslide]
+\frametitle{clusterlib - How to avoid re-launching already done jobs?}
+
+Firstly, record when a job is done
+
+\begin{pythoncode}
+# main.py
+
+import sys, os
+from clusterlib.storage import sqlite3_dumps
+
+NOSQL_PATH = os.path.join(os.environ["HOME"], "job.sqlite3")
+
+def main(argv=None):
+    if argv is None: # For ease here, function parameters are sys.argv
+        argv = sys.argv  
+    # do heavy computation
+    # Save script evaluation on the hard disk
+
+if __name__ == "__main__":
+     main()
+     # Great, the jobs is done!
+     sqlite3_dumps({" ".join(sys.argv): "JOB DONE"}, NOSQL_PATH)
+\end{pythoncode}
+
+\end{frame}
+
+\begin{frame}[fragile=singleslide]
+\frametitle{clusterlib - How to avoid re-launching already done jobs?}
+
+Secondly, don't launch jobs that have already been done.
+
+\begin{pythoncode}
+# launcher.py
+
+import sys
+from clusterlib.scheduler import queued_or_running_jobs
+from clusterlib.scheduler import submit
+from clusterlib.storage import sqlite3_loads
+from clusterlib_main import NOSQL_PATH
+
+if __name__ == "__main__":
+    scheduled_jobs = set(queued_or_running_jobs())
+    done_jobs = sqlite3_loads(NOSQL_PATH)
+    
+    for param in range(100):
+        job_name = "job-param=%s" % param
+        job_command = "%s main.py --param %s" % (sys.executable,
+                                                 param)
+        if (job_name not in scheduled_jobs and 
+                job_command not in done_jobs):
+            script = submit(job_command, job_name=job_name)
+\end{pythoncode}
+    
+\end{frame}
+
+\begin{frame}[fragile=singleslide]
+\frametitle{clusterlib - Simplicity beats complexity}
+
+
+With only 4 functions, it's possible to manage and to launch thousands of jobs:
+
+\begin{pythoncode}
+from clusterlib.scheduler import queued_or_running_jobs
+from clusterlib.scheduler import submit 
+from clusterlib.storage import sqlite3_dumps
+from clusterlib.storage import sqlite3_loads
+\end{pythoncode}
+
+
+\begin{block}{Checklist}
+\begin{itemize}
+    \item Can we launch easily many jobs at once? \structure{Yes!}
+    \item Can we avoid launching running or queued jobs? \structure{Yes!}
+    \item Can we avoid launching completed jobs? \structure{Yes!}
+    \item Will it work for several clusters? \structure{Yes!}
+    \item Do we have to install dependencies? \structure{Only python}
+\end{itemize}    
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile=singleslide]
+\frametitle{Why making an open source library?}
+    
+\begin{itemize}
+\item Give back to the open source community.
+\item Bug reports are great!
+\item Public code often means high quality standard !
+\item New contributors !!! 
+\item Science requires reproducibility !
+\end{itemize}
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{Going open source : step by step todolist}
+    
+\begin{enumerate}
+\item Host the code publicly
+\item Choose an open source license : BDS-like or GPL-like license.
+\item Start an issue tracker
+\item Make a documentation and host the documentation
+\item Have a test suite 
+\item Automate continuous integration : test, documentation, code coverage.
+\item Get a change log with attributed contribution.
+\end{enumerate}
+    
+\end{frame}
+
+
+
+
+\begin{frame}[fragile=singleslide]
+\frametitle{Join an open source project!}
+
+Join a community! Learn the best practices and technologies! 
+Make your code survived more than the last project! Give your
+code to the world!
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{scikit-learn-sprint.jpg}
+
+\begin{small}
+\structure{scikit-learn sprint 2014}
+\end{small}
+\end{center}
+
+    
+\end{frame}
+
+
 
 \begin{frame}[allowframebreaks]%in case more than 1 slide needed
 \frametitle{References} 
