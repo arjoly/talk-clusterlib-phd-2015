@@ -19,7 +19,7 @@
 \usepackage{xcolor}
 \usepackage{minted}
 \definecolor{rulecolor}{rgb}{0.80,0.80,0.80}
-\newminted{python}{fontsize=\scriptsize}
+\newminted{python}{fontsize=\footnotesize}
 
 \graphicspath{{./images/}}
 
@@ -152,25 +152,34 @@ for any new \structure{input}.
 \frametitle{Time is running out}
 
 A huge set of tasks and a practical upper bound
-
 \[
 O(\text{\#datasets} \times  \text{\#algorithms}  \times  \text{\#parameters}) \leq \text{Time before deadline}
 \]
-
-But, we have \alert{embarrassingly parallel tasks}.
-
-
+ 
+\alert{Embarrassingly parallel tasks}.
   
+}
+
+
+\frame{
+    \frametitle{Supercomputer = scheduler + workers}
+    \framesubtitle{Supercomputer = cluster of computers}    
+    
+    \begin{center}
+        \includegraphics[width=0.9\textwidth]{scheduler}
+    \end{center}
+    
 }
 
 \frame{
 \frametitle{CECI is in !}    
 Thanks to the CECI\footnote{\emph{The CECI  (\url{http://www.ceci-hpc.be/}) is a supercomputer 
-consortium funded by the FNRS.}}, we have access to 
+consortium funded by the FNRS.}} at the University 
+of Liège, we have access to 
 
 \begin{description}
-\item[7] clusters;
-\item[$\approx 20 000$] cores; % 2048 + 2752 + 896 + 416+  1380 + 816 + 3288 + 8208
+\item[7] supercomputers (or clusters of computers);
+\item[$\approx$ 20 000] cores; % 2048 + 2752 + 896 + 416+  1380 + 816 + 3288 + 8208
 % 128 * 64  +  43 * 256 + 32 * 36 +  26 *128 + 115 * 48 + 17 * 128 + 274 * 24 +  342 * 64
 \item[>60 000] GB ram;
 \item[12] high performance scientific GPU.
@@ -178,8 +187,10 @@ consortium funded by the FNRS.}}, we have access to
 
 }
 
+
+
 \begin{frame}[fragile=singleslide]
-\frametitle{A glimpse to a supercomputer user interface (SLURM)}
+\frametitle{A glimpse to the SLURM scheduler user interface}
 \framesubtitle{How to sumit a job?}
 
 First, we need to write a bash file \texttt{job.sh} which specifies 
@@ -206,26 +217,30 @@ $ sbatch job.sh
 \end{frame}
 
 \begin{frame}[fragile=singleslide]
-    \frametitle{clusterlib - How to launch easily many jobs??}
-    
-    Let's generate jobs submission command on the fly!
-    
-    \begin{pythoncode}
-        >>> from clusterlib.scheduler import submit
-        >>> script = submit("srun hostname", job_name="test",
-        ...                 time="10:00", memory=1000, backend="slurm")
-        >>> print(script)
-        echo '#!/bin/bash
-        srun hostname' | sbatch --job-name=test --time=10:00 --mem=1000 
-        >>> # Let's launch the job
-        >>> os.system(script)
-    \end{pythoncode}
+\frametitle{With clusterlib, how to launch easily many jobs??}
+
+Let's generate jobs submission command on the fly!
+
+\begin{pythoncode}
+>>> from clusterlib.scheduler import submit
+>>> script = submit(job_command="srun hostname", 
+...                 job_name="test",
+...                 time="10:00", 
+...                 memory=1000, 
+...                 backend="slurm")
+>>> print(script)
+echo '#!/bin/bash
+srun hostname' | sbatch --job-name=test --time=10:00 --mem=1000 
+
+>>> # Let's launch the job
+>>> os.system(script)
+\end{pythoncode}
     
 \end{frame}
 
 
 \begin{frame}[fragile=singleslide]
-\frametitle{A glimpse to a supercomputer user interface (SLURM)}
+\frametitle{A glimpse to the SLURM scheduler user interface}
 \framesubtitle{How to check if a job is running?}
 
 To check if a job is running, you can use the \texttt{squeue} command.
@@ -252,7 +267,7 @@ JOBID   PARTITION     NAME       USER  ST       TIME  NODES NODELIST(REASON)
 
 
 \begin{frame}[fragile=singleslide]
-\frametitle{clusterlib - How to avoid re-launching ... ?}
+\frametitle{With clusterlib, how to avoid re-launching ... ?}
 
 \begin{block}{... running and queued jobs?}
 Let's give to jobs a unique name, then let's retrieve
@@ -268,8 +283,8 @@ the names of running / queued jobs.
 
 
 \begin{block}{... completed jobs?}
-A job must indicate through the file system that it has been completed e.g. by
-creating a file or by registering completion into a database.
+A job must indicate through the file system that it has been completed {\footnotesize e.g. by
+creating a file or by registering completion into a database.}
 
 \structure{clusterlib} provides a small NO-SQL database based on sqlite3.
 \end{block}
@@ -313,15 +328,48 @@ from clusterlib.storage import sqlite3_loads
     
 }
 
+\frame{
+\frametitle{Why making an open source library?}
+
+\begin{block}{Give back to the open source community.}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{AffiliateLogosFinal_8}
+
+Open source initiative affiliate communities
+\end{center}
+
+\end{block}
+}
+
+\frame{
+    \frametitle{Why making an open source library?}
+    \begin{block}{Bug reports are great!}
+    \begin{center}
+        \includegraphics[width=0.7\textwidth]{field_of_dreams}
+    \end{center}
+    \end{block}
+}
+
+
 \begin{frame}[fragile=singleslide]
 \frametitle{Why making an open source library?}
-    
-\begin{itemize}
-\item Give back to the open source community.
-\item Bug reports are great!
-\item New contributors !
-\end{itemize}
-    
+
+
+\begin{block}{Welcome new contributors !}
+\begin{center}
+\includegraphics[width=2cm]{contrib_ogrisel}
+\includegraphics[width=2cm]{contrib_asutera}
+\includegraphics[width=2cm]{contrib_lesteve}
+\includegraphics[width=2cm]{contrib_kpetrov}
+\end{center}
+
+\begin{small}
+From left to right: Olivier Grisel, Antonio Sutera,  
+Loic Esteve (no photo) and Konstantin Petrov (no photo).
+\end{small}
+
+\end{block}
+
 \end{frame}
 
 \frame{
@@ -583,7 +631,7 @@ OK (SKIP=3)
     
     \only<1>{
         \begin{block}{Continuous testing}
-        clusterlib uses \alert{Travis CI} (works for a lot languages).
+        clusterlib uses \alert{Travis CI} (works for many languages).
                  
         \begin{center}
         \includegraphics[width=\textwidth]{automation_testing}
@@ -605,7 +653,7 @@ OK (SKIP=3)
         \end{center}     
         
          \begin{description}    
-             \item[Tip] Continuous integration can be enhanced with code coverage and code quality. 
+             \item[Tip] Continuous integration can be enhanced with code test coverage and code quality coverage. 
          \end{description}          
        
     }
@@ -672,51 +720,52 @@ code to the world!
     \frametitle{A full example of clusterlib usage}
     
 
-    \begin{pythoncode}
-        # main.py
-        
-        import sys, os
-        from clusterlib.storage import sqlite3_dumps
-        
-        NOSQL_PATH = os.path.join(os.environ["HOME"], "job.sqlite3")
-        
-        def main(argv=None):
-        if argv is None: # For ease here, function parameters are sys.argv
+\begin{pythoncode}
+# main.py
+
+import sys, os
+from clusterlib.storage import sqlite3_dumps
+
+NOSQL_PATH = os.path.join(os.environ["HOME"], "job.sqlite3")
+
+def main(argv=None):
+    # For ease here, function parameters are sys.argv
+    if argv is None: 
         argv = sys.argv  
-        # do heavy computation
-        # Save script evaluation on the hard disk
-        
-        if __name__ == "__main__":
-        main()
-        # Great, the jobs is done!
-        sqlite3_dumps({" ".join(sys.argv): "JOB DONE"}, NOSQL_PATH)
-    \end{pythoncode}
+    # Do heavy computation
+    # Save script evaluation on the hard disk
+
+if __name__ == "__main__":
+    main()
+    # Great, the jobs is done!
+    sqlite3_dumps({" ".join(sys.argv): "JOB DONE"}, NOSQL_PATH)
+\end{pythoncode}
 
 \end{frame}
 
 \begin{frame}[fragile=singleslide]
     \frametitle{A full example of clusterlib usage}
     
-    \begin{pythoncode}
-        # launcher.py
-        import sys
-        from clusterlib.scheduler import queued_or_running_jobs
-        from clusterlib.scheduler import submit
-        from clusterlib.storage import sqlite3_loads
-        from main import NOSQL_PATH
-        
-        if __name__ == "__main__":
-        scheduled_jobs = set(queued_or_running_jobs())
-        done_jobs = sqlite3_loads(NOSQL_PATH)
-        
-        for param in range(100):
+\begin{pythoncode}
+# launcher.py
+import sys
+from clusterlib.scheduler import queued_or_running_jobs
+from clusterlib.scheduler import submit
+from clusterlib.storage import sqlite3_loads
+from main import NOSQL_PATH
+
+if __name__ == "__main__":
+    scheduled_jobs = set(queued_or_running_jobs())
+    done_jobs = sqlite3_loads(NOSQL_PATH)
+    
+    for param in range(100):
         job_name = "job-param=%s" % param
-        job_command = "%s main.py --param %s" % (sys.executable,
-        param)
+        job_command = ("%s main.py --param %s" 
+                       % (sys.executable, param))
         if (job_name not in scheduled_jobs and 
-        job_command not in done_jobs):
-        script = submit(job_command, job_name=job_name)
-    \end{pythoncode}
+                job_command not in done_jobs):
+            script = submit(job_command, job_name=job_name)
+\end{pythoncode}
     
 \end{frame}
 
