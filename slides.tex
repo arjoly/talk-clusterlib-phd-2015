@@ -57,19 +57,30 @@
 
 
 % Talk information
-\author[A. Joly]{Arnaud Joly}
-\title{The genesis of clusterlib \\An open source library to tame your favourite supercomputer}
+\author[A. Joly]{\textbf{Arnaud Joly}}
+\title{\textbf{The genesis of clusterlib \\An open source library to tame your favourite supercomputer}}
 % \institute[Ulg]{\includegraphics[height=2cm]{logo_coul_texte_blason_cadre}}
-\date{May 2015, Phd hour discussions}
+\date{\textbf{May 2015, Phd hour discussions}}
 \subject{}
 %\logo{} %change here. I used an eps file logo, you can use jpg or other format
 
 
 \begin{document}
     
-\frame[plain]
+%\frame[plain]
+%{
+%    \titlepage
+%}
+
 {
-    \titlepage
+    \usebackgroundtemplate{
+        \includegraphics[width=1.0\paperwidth,
+        height=1.0\paperheight]{supercomputer}}
+    \setbeamercolor{title}{fg=white}
+    \setbeamercolor{author}{fg=white}
+    \setbeamercolor{date}{fg=white}
+    
+    \frame[plain]{\titlepage}
 }
 
 \frame{
@@ -692,10 +703,8 @@ code to the world!
     
 \end{frame}
 
-\frame[plain]
-{
-    \titlepage
-}
+
+
 
 %\frame{
 %    \frametitle{Let's not reinvent the wheel}
