@@ -10,3 +10,6 @@ Awesome tools are also presented for software projects.
 The goal of the clusterlib is to ease the creation,
 launch and management of embarrassingly parallel jobs
 on supercomputers with schedulers such as SLURM and SGE.
+
+
+http://www.slideshare.net/arjoly/the-genesis-of-clusterlib
